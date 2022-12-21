@@ -16,13 +16,13 @@ phases:
   build:
     commands:
       - echo validating the cfn template
-      - cfn-lint end2end-cicd-cfn-template.yaml
+      - cfn-lint end2end-cicd-cfn-template.yml
       - echo CloudFormation Template Build started on `date`**
-      - aws cloudformation package --template-file end2end-cicd-cfn-template.yaml --s3-bucket sunnystore.com --output-template-file outPutTemplate.yaml
+      - aws cloudformation package --template-file end2end-cicd-cfn-template.yml --s3-bucket sunnystore.com --output-template-file outPutTemplate.yml
   post_build:
     commands:
       - echo Build completed on `date`
 artifacts:
   files:
-    - end2end-cicd-cfn-template.yaml
-    - outPutTemplate.yaml
+    - end2end-cicd-cfn-template.yml
+    - outPutTemplate.yml
