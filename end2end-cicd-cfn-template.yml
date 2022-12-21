@@ -61,7 +61,7 @@ Resources:
           ToPort: "22"
 
 Outputs:
-  InstanceId:
+  PublicIp:
     Description: InstanceId of the newly created EC2 instance
     Value: !GetAtt WebServer.PublicIp # return the ip addr
   WebsiteURL:
