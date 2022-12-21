@@ -1,0 +1,28 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.9 #install python 3.9 version
+  pre_build:
+    commands:
+      - echo checking the version of python installed
+      - python3 --version
+      - echo installing cfn-lint
+      - pip3 install cfn-lint
+      - echo checking the cfn-lint version installed
+      - cfn-lint --version
+
+  build:
+    commands:
+      - echo validating the cfn template
+      - cfn-lint end2end-cicd-cfn-template.yaml
+      - echo CloudFormation Template Build started on `date`**
+      - aws cloudformation package --template-file end2end-cicd-cfn-template.yaml --s3-bucket sunnystore.com --output-template-file outPutTemplate.yaml
+  post_build:
+    commands:
+      - echo Build completed on `date`
+artifacts:
+  files:
+    - end2end-cicd-cfn-template.yaml
+    - outPutTemplate.yaml
