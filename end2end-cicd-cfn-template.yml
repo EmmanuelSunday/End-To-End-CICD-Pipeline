@@ -21,12 +21,10 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
 
-# Mappings:
-#   EnvironmentMap:
-#     us-east-1:
-#       Test-Environment
-#     us-west-1:
-#       Prod-Environment
+Mappings:
+  EnvironmentMap:
+    us-east-1: Test-Environment
+    us-west-1: Prod-Environment
 
 Resources:
   WebServer:
@@ -44,7 +42,7 @@ Resources:
           yum install -y httpd
           systemctl start httpd
           systemctl enable httpd
-          echo "<html><body><h1>Hello World, welcome to our {} in ${AWS::Region}<h1></body></html>" > /var/www/html/index.html
+          echo "<html><body><h1>Hello World, welcome to our ${!FindInMap [EnvironmentMap, !Ref AWS::Region]} in ${AWS::Region}<h1></body></html>" > /var/www/html/index.html
 
   WebServerSecurityGroup: #security group ID
     Type: AWS::EC2::SecurityGroup
