@@ -3,12 +3,18 @@ Parameters:
     Description: EC2 instance type.
     Type: String
     Default: t2.micro
-  # Environment:
-  #   Description: The deployed environment (either Test or Production environment)
-  #   Type: String
+
+  Environment:
+    Description: The deployed environment (either Test or Production environment)
+    Type: String
+    AllowedValues:
+      - TEST
+      - PROD
+
   KeyName:
     Description: Name of an existing EC2 key pair for SSH access to the EC2 instance.
     Type: AWS::EC2::KeyPair::KeyName
+
   SSHLocation:
     Description: The IP address range that can be used to SSH to the EC2 instances
     Type: String
@@ -17,32 +23,50 @@ Parameters:
     Default: 0.0.0.0/0
     AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})" # IP Address
     ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+
   ImageId:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
 
 Mappings:
   EnvironmentMap:
-    us-east-1: Test-Environment
-    us-west-1: Prod-Environment
+    us-east-1:
+      Env: TEST
+    us-west-1:
+      Env: PROD
 
 Resources:
   WebServer:
     Type: AWS::EC2::Instance
     Properties:
       ImageId: !Ref ImageId
-      InstanceType: !Ref InstanceType # Nothing is hardcoded
+      InstanceType: !Ref InstanceType
       KeyName: !Ref KeyName
       SecurityGroups:
         - !Ref WebServerSecurityGroup
+      Tags:
+        - Key: Name
+          Value:
+            !Join [
+              "-",
+              [!FindInMap [EnvironmentMap, !Ref AWS::Region, Env], Server],
+            ]
+        - Key: Environment
+          Value:
+            !Join [
+              " ",
+              [!FindInMap [EnvironmentMap, !Ref AWS::Region, Env], Environment],
+            ]
+
       UserData:
-        Fn::Base64: !Sub |
-          #!/bin/bash
-          yum update -y
-          yum install -y httpd
-          systemctl start httpd
-          systemctl enable httpd
-          echo "<html><body><h1>Hello World, welcome to our ${!FindInMap [EnvironmentMap, !Ref AWS::Region]} in ${AWS::Region}<h1></body></html>" > /var/www/html/index.html
+        Fn::Base64:
+          Fn::Sub: |
+            #!/bin/bash
+            yum update -y
+            yum install -y httpd
+            systemctl start httpd
+            systemctl enable httpd
+            echo "<html><body><h1>Hello World, welcome to our ${Environment} ENVIRONMENT in ${AWS::Region}<h1></body></html>" > /var/www/html/index.html
 
   WebServerSecurityGroup: #security group ID
     Type: AWS::EC2::SecurityGroup
@@ -59,9 +83,9 @@ Resources:
           ToPort: "22"
 
 Outputs:
-  PublicIp:
+  InstanceID:
     Description: InstanceId of the newly created EC2 instance
-    Value: !GetAtt WebServer.PublicIp # return the ip addr
+    Value: !Ref WebServer # return the Instance ID
   WebsiteURL:
     Value: !Sub "http://${WebServer.PublicDnsName}"
     Description: URL for newly created webserver
