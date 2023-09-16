@@ -64,7 +64,7 @@ Resources:
             yum install -y httpd
             systemctl start httpd
             systemctl enable httpd
-            echo "<html><center><body style="background-color:lightblue"><h1 style="color:red">Hello, Welcome to our ${Environment} Environment Server deployed in the AWS ${AWS::Region} Region<h1></body></html>" > /var/www/html/index.html
+            echo "<html><center><body style="background-color:lightblue"><h1 style="color:red">Hello, Welcome to our updated ${Environment} Environment Server deployed in the AWS ${AWS::Region} Region<h1></body></html>" > /var/www/html/index.html
 
   WebServerSecurityGroup: #security group ID
     Type: AWS::EC2::SecurityGroup
